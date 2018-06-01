@@ -574,17 +574,18 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     
     open func onWillPresentView() {
         backgroundView.alpha = 0.0
-        cancelView?.frame.origin.y = view.bounds.size.height
+        cancelView?.frame.origin.y = UIScreen.main.bounds.height
         collectionView.collectionViewLayout.invalidateLayout()
         collectionView.layoutSubviews()
+        collectionView.frame.origin.y = UIScreen.main.bounds.height
         // Override this to add custom behavior previous to start presenting view animated.
         // Tip: you could start a new animation from this method
     }
     
     open func performCustomPresentationAnimation(_ presentedView: UIView, presentingView: UIView) {
         backgroundView.alpha = 1.0
-        cancelView?.frame.origin.y = view.bounds.size.height - settings.cancelView.height - safeAreaInsets.bottom
-        collectionView.frame = view.bounds
+        cancelView?.frame.origin.y = UIScreen.main.bounds.height - (settings.cancelView.height  + 12 )
+        collectionView.frame.origin.y = UIScreen.main.bounds.height / 2 - 74
         // Override this to add custom animations. This method is performed within the presentation animation block
     }
     
@@ -600,7 +601,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     open func performCustomDismissingAnimation(_ presentedView: UIView, presentingView: UIView) {
         backgroundView.alpha = 0.0
         cancelView?.frame.origin.y = view.bounds.size.height
-        collectionView.frame.origin.y = contentHeight + (settings.cancelView.showCancel ? settings.cancelView.height : 0) + settings.animation.dismiss.offset
+        collectionView.frame.origin.y = UIScreen.main.bounds.height
         // Override this to add custom animations. This method is performed within the presentation animation block
     }
     
@@ -657,29 +658,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }
 
     fileprivate func setUpContentInsetForHeight(_ height: CGFloat) {
-        if initialContentInset == nil {
-            initialContentInset = collectionView.contentInset
-        }
-        var leftInset = initialContentInset.left
-        var rightInset = initialContentInset.right
-        var bottomInset = settings.cancelView.showCancel ? settings.cancelView.height : initialContentInset.bottom
-        var topInset = height - contentHeight - safeAreaInsets.bottom
-
-        if settings.cancelView.showCancel {
-            topInset -= settings.cancelView.height
-        }
-
-        topInset = max(topInset, 30)
-
-        bottomInset += safeAreaInsets.bottom
-        leftInset += safeAreaInsets.left
-        rightInset += safeAreaInsets.right
-        topInset += safeAreaInsets.top
-
-        collectionView.contentInset = UIEdgeInsets(top: topInset, left: leftInset, bottom: bottomInset, right: rightInset)
-        if !settings.behavior.useDynamics {
-            collectionView.contentOffset.y = -height + contentHeight + safeAreaInsets.bottom
-        }
+       
     }
 
     // MARK: - Private properties
