@@ -128,7 +128,8 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }()
 
     lazy open var collectionView: UICollectionView = { [unowned self] in
-        let collectionView = UICollectionView(frame: UIScreen.main.bounds, collectionViewLayout: self.collectionViewLayout)
+        var height = min(UIScreen.main.bounds.height / 2, CGFloat(62) * CGFloat(self.sectionForIndex(0)!.actions.count))
+        let collectionView = UICollectionView(frame: CGRect.init(x: 12, y: height - 74, width: UIScreen.main.bounds.width - 24, height: height), collectionViewLayout: self.collectionViewLayout)
         collectionView.alwaysBounceVertical = self.settings.behavior.bounces
         collectionView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         collectionView.backgroundColor = .clear
@@ -285,9 +286,6 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         setUpContentInsetForHeight(view.frame.height)
         
         // set up collection view initial position taking into account top content inset
-        collectionView.frame = view.bounds
-        collectionView.frame.origin.y += contentHeight + (settings.cancelView.showCancel ? settings.cancelView.height : 0)
-        collectionViewLayout.footerReferenceSize = CGSize(width: 320, height: 0)
         // -
         
         if settings.cancelView.showCancel {
@@ -357,7 +355,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }
 
     open func createCancelView() -> UIView {
-        let cancelView = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: settings.cancelView.height + safeAreaInsets.bottom))
+        let cancelView = UIView(frame: CGRect(x: 12, y: 0, width: view.bounds.width - 24, height: settings.cancelView.height + safeAreaInsets.bottom))
         cancelView.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
         cancelView.backgroundColor = settings.cancelView.backgroundColor
 
@@ -369,8 +367,11 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         cancelView.addSubview(cancelButton)
 
         let metrics = ["height": settings.cancelView.height]
-        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[button]|", options: [], metrics: metrics, views: ["button": cancelButton]))
-        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[button(height)]", options: [], metrics: metrics, views: ["button": cancelButton]))
+        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-[button]-|", options: [], metrics: metrics, views: ["button": cancelButton]))
+        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-[button(height)]-|", options: [], metrics: metrics, views: ["button": cancelButton]))
+
+        cancelView.layer.cornerRadius = 15
+        cancelView.clipsToBounds = false
 
         return cancelView
     }
@@ -658,7 +659,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }
 
     fileprivate func setUpContentInsetForHeight(_ height: CGFloat) {
-       
+        
     }
 
     // MARK: - Private properties
