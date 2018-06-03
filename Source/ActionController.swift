@@ -128,8 +128,8 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }()
 
     lazy open var collectionView: UICollectionView = { [unowned self] in
-        var height = min(UIScreen.main.bounds.height / 2, CGFloat(62) * CGFloat(self.sectionForIndex(0)!.actions.count))
-        let collectionView = UICollectionView(frame: CGRect.init(x: 12, y: height - 74, width: UIScreen.main.bounds.width - 24, height: height), collectionViewLayout: self.collectionViewLayout)
+        var height = min(UIScreen.main.bounds.height / 2, CGFloat(52) * CGFloat(self.sectionForIndex(0)!.actions.count))
+        let collectionView = UICollectionView(frame: CGRect.init(x: 12, y: UIScreen.main.bounds.height - height - 74, width: UIScreen.main.bounds.width - 24, height: height), collectionViewLayout: self.collectionViewLayout)
         collectionView.alwaysBounceVertical = self.settings.behavior.bounces
         collectionView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         collectionView.backgroundColor = .clear
@@ -363,12 +363,13 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         cancelButton.addTarget(self, action: #selector(ActionController.cancelButtonDidTouch(_:)), for: .touchUpInside)
         cancelButton.setTitle(settings.cancelView.title, for: UIControlState())
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
+        cancelButton.setTitleColor(settings.cancelView.fontColor, for: .normal)
 
         cancelView.addSubview(cancelButton)
 
-        let metrics = ["height": settings.cancelView.height]
+        let metrics = ["height": settings.cancelView.height + safeAreaInsets.bottom]
         cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-[button]-|", options: [], metrics: metrics, views: ["button": cancelButton]))
-        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-[button(height)]-|", options: [], metrics: metrics, views: ["button": cancelButton]))
+        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(0)-[button(height)]-|", options: [], metrics: metrics, views: ["button": cancelButton]))
 
         cancelView.layer.cornerRadius = 15
         cancelView.clipsToBounds = false
@@ -575,7 +576,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     
     open func onWillPresentView() {
         backgroundView.alpha = 0.0
-        cancelView?.frame.origin.y = UIScreen.main.bounds.height
+        cancelView?.frame.origin.y = UIScreen.main.bounds.height + collectionView.frame.size.height + 24
         collectionView.collectionViewLayout.invalidateLayout()
         collectionView.layoutSubviews()
         collectionView.frame.origin.y = UIScreen.main.bounds.height
@@ -586,7 +587,9 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     open func performCustomPresentationAnimation(_ presentedView: UIView, presentingView: UIView) {
         backgroundView.alpha = 1.0
         cancelView?.frame.origin.y = UIScreen.main.bounds.height - (settings.cancelView.height  + 12 )
-        collectionView.frame.origin.y = UIScreen.main.bounds.height / 2 - 74
+        var height = min(UIScreen.main.bounds.height / 2, CGFloat(52) * CGFloat(self.sectionForIndex(0)!.actions.count))
+
+        collectionView.frame.origin.y = UIScreen.main.bounds.height - height - 74
         // Override this to add custom animations. This method is performed within the presentation animation block
     }
     
