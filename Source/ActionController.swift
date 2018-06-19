@@ -140,8 +140,8 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         collectionView.showsVerticalScrollIndicator = false
         if self.settings.behavior.hideOnTap {
             let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(ActionController.tapGestureDidRecognize(_:)))
-            self.view.isUserInteractionEnabled = true
-            self.view.addGestureRecognizer(tapRecognizer)
+            self.backgroundView.isUserInteractionEnabled = true
+            self.backgroundView.addGestureRecognizer(tapRecognizer)
         }
         if self.settings.behavior.hideOnScrollDown && !self.settings.behavior.scrollEnabled {
             let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(ActionController.swipeGestureDidRecognize(_:)))
