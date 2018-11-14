@@ -128,7 +128,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }()
 
     lazy open var collectionView: UICollectionView = { [unowned self] in
-        var height = min(UIScreen.main.bounds.height / 2, CGFloat(52) * CGFloat(self.sectionForIndex(0)!.actions.count))
+        var height = min(UIScreen.main.bounds.height / 2, CGFloat(52) * (CGFloat(self.sectionForIndex(0)!.actions.count) + 1))
         let collectionView = UICollectionView(frame: CGRect.init(x: 12, y: UIScreen.main.bounds.height - height - 74, width: UIScreen.main.bounds.width - 24, height: height), collectionViewLayout: self.collectionViewLayout)
         collectionView.alwaysBounceVertical = self.settings.behavior.bounces
         collectionView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
