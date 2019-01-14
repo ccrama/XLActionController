@@ -389,16 +389,15 @@ After the dismissal animation completes, `dismissView` calls `onDidDismissView` 
 
 ## Requirements
 
-* iOS 9.0+
-* Xcode 9.0+
-* Swift 4
+* iOS 9.3+
+* Xcode 10.1+
+* Swift 4.2+
 
 ## Getting involved
 
 * If you **want to contribute** please feel free to **submit pull requests**.
 * If you **have a feature request** please **open an issue**.
-* If you **found a bug** or **need help** please **check older issues or threads on
-[StackOverflow](http://stackoverflow.com/questions/tagged/xlactioncontroller) before submitting an issue**.
+* If you **found a bug** or **need help** please **check older issues before submitting an issue**.
 
 If you use **XLActionController** in your app we would love to hear about it!
 Drop us a line on [twitter](https://twitter.com/xmartlabs).
@@ -444,7 +443,7 @@ dependency manager for Cocoa.
 Specify XLActionController into your project's Carthage:
 
 ```
-github "xmartlabs/XLActionController" ~> 4.0
+github "xmartlabs/XLActionController" ~> 4.1
 ```
 
 ### Manually as Embedded Framework
