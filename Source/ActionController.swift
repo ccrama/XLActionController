@@ -125,7 +125,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         backgroundView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         backgroundView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         return backgroundView
-    }
+    }()
 
     lazy open var collectionView: UICollectionView = { [unowned self] in
         var height = min(UIScreen.main.bounds.height / 2, CGFloat(56) * (CGFloat(self.sectionForIndex(0)!.actions.count + 1)))
