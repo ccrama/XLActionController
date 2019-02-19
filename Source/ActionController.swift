@@ -113,7 +113,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
 
     open var safeAreaInsets: UIEdgeInsets {
         if #available(iOS 11, *) {
-            return view.safeAreaInsets
+            return UIApplication.shared.delegate?.window??.safeAreaInsets ?? UIEdgeInsets.zero
         }
         return .zero
     }
@@ -353,24 +353,25 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }
 
     open func createCancelView() -> UIView {
-        let cancelView = UIView(frame: CGRect(x: 12, y: 0, width: view.bounds.width - 24, height: settings.cancelView.height + safeAreaInsets.bottom))
+        let cancelView = UIView(frame: CGRect(x: 12, y: 0, width: view.bounds.width - 24, height: 52 + safeAreaInsets.bottom))
         cancelView.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
-        cancelView.backgroundColor = settings.cancelView.backgroundColor
+        cancelView.backgroundColor = .clear
 
-        let cancelButton = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: settings.cancelView.height))
+        let cancelButton = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: 52))
         cancelButton.addTarget(self, action: #selector(ActionController.cancelButtonDidTouch(_:)), for: .touchUpInside)
         cancelButton.setTitle(settings.cancelView.title, for: UIControl.State())
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         cancelButton.setTitleColor(settings.cancelView.fontColor, for: .normal)
+        cancelButton.backgroundColor = settings.cancelView.backgroundColor
 
         cancelView.addSubview(cancelButton)
 
-        let metrics = ["height": settings.cancelView.height + safeAreaInsets.bottom]
+        let metrics = ["height": settings.cancelView.height, "bottomHeight": safeAreaInsets.bottom]
         cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-[button]-|", options: [], metrics: metrics, views: ["button": cancelButton]))
-        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(0)-[button(height)]-|", options: [], metrics: metrics, views: ["button": cancelButton]))
+        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(0)-[button(height@1000)]-(bottomHeight)-|", options: [], metrics: metrics, views: ["button": cancelButton]))
 
-        cancelView.layer.cornerRadius = 15
-        cancelView.clipsToBounds = false
+        cancelButton.layer.cornerRadius = 15
+        cancelButton.clipsToBounds = false
 
         return cancelView
     }
@@ -665,8 +666,29 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }
 
     fileprivate func setUpContentInsetForHeight(_ height: CGFloat) {
+        initialContentInset = initialContentInset ?? collectionView.contentInset
+        var leftInset = initialContentInset.left
+        var rightInset = initialContentInset.right
+        var bottomInset = settings.cancelView.showCancel ? initialContentInset.bottom + settings.cancelView.height : initialContentInset.bottom
+        var topInset = height - contentHeight - safeAreaInsets.bottom
+        
+        if settings.cancelView.showCancel {
+            topInset -= settings.cancelView.height
+        }
+        
+        topInset = max(topInset, 30)
+        
+        bottomInset += safeAreaInsets.bottom
+        leftInset += safeAreaInsets.left
+        rightInset += safeAreaInsets.right
+        topInset += safeAreaInsets.top
+        
+        collectionView.contentInset = UIEdgeInsets(top: topInset, left: leftInset, bottom: bottomInset, right: rightInset)
+        if !settings.behavior.useDynamics {
+            collectionView.contentOffset.y = -height + contentHeight + bottomInset
+        }
     }
-
+    
     // MARK: - Private properties
 
     fileprivate var navigationBarWasHiddenAtStart = false
@@ -716,8 +738,6 @@ open class DynamicsActionController<ActionViewType: UICollectionViewCell, Action
         }
         contentHeight += collectionView.contentInset.bottom
         
-        setUpContentInsetForHeight(view.frame.height)
-
         view.setNeedsLayout()
         view.layoutIfNeeded()
     }
