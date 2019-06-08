@@ -35,7 +35,7 @@ open class Section<ActionDataType, SectionHeaderDataType> {
     }
     open var actions = [Action<ActionDataType>]()
     fileprivate var _data: RawData<SectionHeaderDataType>?
-    
+
     public init() {}
 }
 
@@ -91,14 +91,14 @@ final class RawData<T> {
 // MARK: - ActionController class
 
 open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType, HeaderViewType: UICollectionReusableView, HeaderDataType, SectionHeaderViewType: UICollectionReusableView, SectionHeaderDataType>: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning {
-    
+ 
     // MARK - Public properties
     
     open var headerData: HeaderDataType? {
         set { _headerData = RawData(data: newValue) }
         get { return _headerData?.data }
     }
-    
+
     open var settings: ActionControllerSettings = ActionControllerSettings.defaultSettings()
     
     open var cellSpec: CellSpec<ActionViewType, ActionDataType>
@@ -110,26 +110,26 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     open var onConfigureCellForAction: ((ActionViewType, Action<ActionDataType>, IndexPath) -> ())?
     
     open var contentHeight: CGFloat = 0.0
-    
+
     open var safeAreaInsets: UIEdgeInsets {
         if #available(iOS 11, *) {
             return view.safeAreaInsets
         }
         return .zero
     }
-    
+
     open var cancelView: UIView?
-    
+
     lazy open var backgroundView: UIView = {
         let backgroundView = UIView()
         backgroundView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         backgroundView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         return backgroundView
     }()
-    
+
     lazy open var collectionView: UICollectionView = { [unowned self] in
         var height = min(UIScreen.main.bounds.height / 2, CGFloat(56) * (CGFloat(self.sectionForIndex(0)!.actions.count + 1)))
-        let collectionView = UICollectionView(frame: CGRect.init(x: 0, y: UIScreen.main.bounds.height - height - safeAreaInsets.bottom, width: UIScreen.main.bounds.width, height: height), collectionViewLayout: self.collectionViewLayout)
+        let collectionView = UICollectionView(frame: CGRect.init(x: 12, y: UIScreen.main.bounds.height - height - 74 - safeAreaInsets.bottom, width: UIScreen.main.bounds.width - 24, height: height), collectionViewLayout: self.collectionViewLayout)
         collectionView.alwaysBounceVertical = self.settings.behavior.bounces
         collectionView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         collectionView.backgroundColor = .clear
@@ -140,9 +140,8 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         collectionView.showsVerticalScrollIndicator = false
         if self.settings.behavior.hideOnTap {
             let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(ActionController.tapGestureDidRecognize(_:)))
-            collectionView.backgroundView = UIView(frame: collectionView.bounds)
-            collectionView.backgroundView?.isUserInteractionEnabled = true
-            collectionView.backgroundView?.addGestureRecognizer(tapRecognizer)
+            self.backgroundView.isUserInteractionEnabled = true
+            self.backgroundView.addGestureRecognizer(tapRecognizer)
         }
         if self.settings.behavior.hideOnScrollDown && !self.settings.behavior.scrollEnabled {
             let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(ActionController.swipeGestureDidRecognize(_:)))
@@ -150,7 +149,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
             collectionView.addGestureRecognizer(swipeGesture)
         }
         return collectionView
-        }()
+    }()
     
     lazy open var collectionViewLayout: DynamicCollectionViewFlowLayout = { [unowned self] in
         let collectionViewLayout = DynamicCollectionViewFlowLayout()
@@ -158,12 +157,12 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         collectionViewLayout.minimumInteritemSpacing = 0.0
         collectionViewLayout.minimumLineSpacing = 0
         return collectionViewLayout
-        }()
-    
+    }()
+
     open var presentingNavigationController: UINavigationController? {
         return (presentingViewController as? UINavigationController) ?? presentingViewController?.navigationController
     }
-    
+
     // MARK: - ActionController initializers
     
     public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -181,7 +180,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }
     
     // MARK - Public API
-    
+
     open func addAction(_ action: Action<ActionDataType>) {
         if let section = _sections.last {
             section.actions.append(action)
@@ -191,7 +190,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
             section.actions.append(action)
         }
     }
-    
+
     @discardableResult
     open func addSection(_ section: Section<ActionDataType, SectionHeaderDataType>) -> Section<ActionDataType, SectionHeaderDataType> {
         _sections.append(section)
@@ -227,12 +226,12 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     
     open override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         modalPresentationCapturesStatusBarAppearance = settings.statusBar.modalPresentationCapturesStatusBarAppearance
-        
+
         // background view
         view.addSubview(backgroundView)
-        
+
         // register main cell
         switch cellSpec {
         case .nibFile(let nibName, let bundle, _):
@@ -273,16 +272,13 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
             let lastSectionIndex = _sections.count - 1
             let layoutAtts = collectionViewLayout.layoutAttributesForItem(at: IndexPath(item: section.actions.count - 1, section: hasHeader() ? lastSectionIndex + 1 : lastSectionIndex))
             contentHeight = layoutAtts!.frame.origin.y + layoutAtts!.frame.size.height
-            
+
             if settings.cancelView.showCancel && !settings.cancelView.hideCollectionViewBehindCancelView {
                 contentHeight += settings.cancelView.height
             }
         }
-        
+
         // set up collection view initial position taking into account top content inset
-        collectionView.frame = view.bounds
-        collectionView.frame.origin.y += contentHeight + (settings.cancelView.showCancel ? settings.cancelView.height : 0)
-        collectionViewLayout.footerReferenceSize = CGSize(width: 320, height: 0)
         // -
         
         if settings.cancelView.showCancel {
@@ -295,31 +291,31 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         super.viewWillLayoutSubviews()
         setUpContentInsetForHeight(view.frame.height)
     }
-    
+
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         backgroundView.frame = view.bounds
-        
+
         if let navController = presentingNavigationController, settings.behavior.hideNavigationBarOnShow {
             navigationBarWasHiddenAtStart = navController.isNavigationBarHidden
             navController.setNavigationBarHidden(true, animated: animated)
         }
     }
-    
+
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         if let navController = presentingNavigationController, settings.behavior.hideNavigationBarOnShow {
             navController.setNavigationBarHidden(navigationBarWasHiddenAtStart, animated: animated)
         }
     }
-    
+
     @available(iOS 11.0, *)
     open override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
         setUpContentInsetForHeight(view.frame.height)
         updateCancelViewLayout()
     }
-    
+
     open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         
@@ -337,12 +333,12 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
             if let scale = self?.settings.animation.scale {
                 self?.presentingViewController?.view.transform = CGAffineTransform(scaleX: scale.width, y: scale.height)
             }
-            }, completion: nil)
+        }, completion: nil)
         
         
         collectionView.layoutIfNeeded()
     }
-    
+
     override open func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         collectionView.collectionViewLayout.invalidateLayout()
@@ -355,33 +351,39 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     open override var preferredStatusBarStyle : UIStatusBarStyle {
         return settings.statusBar.style
     }
-    
+
     open func createCancelView() -> UIView {
-        let cancelView = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: settings.cancelView.height + safeAreaInsets.bottom))
+        let cancelView = UIView(frame: CGRect(x: 12, y: 0, width: view.bounds.width - 24, height: settings.cancelView.height + safeAreaInsets.bottom))
         cancelView.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
-        cancelView.backgroundColor = settings.cancelView.backgroundColor
+        cancelView.backgroundColor = .clear
         
         let cancelButton = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: settings.cancelView.height))
         cancelButton.addTarget(self, action: #selector(ActionController.cancelButtonDidTouch(_:)), for: .touchUpInside)
         cancelButton.setTitle(settings.cancelView.title, for: UIControl.State())
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        
+        cancelButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+        cancelButton.setTitleColor(settings.cancelView.fontColor, for: .normal)
+        cancelButton.backgroundColor = settings.cancelView.backgroundColor
+
         cancelView.addSubview(cancelButton)
-        
-        let metrics = ["height": settings.cancelView.height]
-        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[button]|", options: [], metrics: metrics, views: ["button": cancelButton]))
-        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[button(height)]", options: [], metrics: metrics, views: ["button": cancelButton]))
-        
+
+        let metrics = ["height": safeAreaInsets.bottom + 32]
+        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-(0)-[button]-(0)-|", options: [], metrics: metrics, views: ["button": cancelButton]))
+        cancelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(height)-[button(58)]", options: [], metrics: metrics, views: ["button": cancelButton]))
+
+        cancelButton.layer.cornerRadius = 15
+        cancelButton.clipsToBounds = false
+
         return cancelView
     }
-    
+
     open func updateCancelViewLayout() {
         guard settings.cancelView.showCancel, let cancelView = self.cancelView else {
             return
         }
         cancelView.frame.size.height = settings.cancelView.height + safeAreaInsets.bottom
     }
-    
+
     // MARK: - UICollectionViewDataSource
     
     open func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -389,18 +391,18 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }
     
     open func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if hasHeader() && section == 0 { return 0 }
-        let rows = _sections[actionSectionIndexFor(section)].actions.count
-        
-        guard let dynamicSectionIndex = _dynamicSectionIndex else {
-            return settings.behavior.useDynamics ? 0 : rows
-        }
-        if settings.behavior.useDynamics && section > dynamicSectionIndex {
-            return 0
-        }
-        return rows
+      if hasHeader() && section == 0 { return 0 }
+      let rows = _sections[actionSectionIndexFor(section)].actions.count
+
+      guard let dynamicSectionIndex = _dynamicSectionIndex else {
+        return settings.behavior.useDynamics ? 0 : rows
+      }
+      if settings.behavior.useDynamics && section > dynamicSectionIndex {
+        return 0
+      }
+      return rows
     }
-    
+
     open func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {
             if (indexPath as NSIndexPath).section == 0 && hasHeader() {
@@ -449,23 +451,23 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     
     open func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let action = self.actionForIndexPath(actionIndexPathFor(indexPath))
-        
+
         if let action = action, action.executeImmediatelyOnTouch {
             action.handler?(action)
         }
-        
+
         self.dismiss() {
             if let action = action, !action.executeImmediatelyOnTouch {
                 action.handler?(action)
             }
         }
     }
-    
+
     open func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         guard let action = self.actionForIndexPath(actionIndexPathFor(indexPath)), let actionData = action.data else {
             return CGSize.zero
         }
-        
+
         let referenceWidth = collectionView.bounds.size.width
         let margins = 2 * settings.collectionView.lateralMargin + collectionView.contentInset.left + collectionView.contentInset.right
         return CGSize(width: referenceWidth - margins, height: cellSpec.height(actionData))
@@ -503,7 +505,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         isPresenting = false
         return self
     }
-    
+
     // MARK: - UIViewControllerAnimatedTransitioning
     
     open func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
@@ -539,20 +541,20 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         onWillPresentView()
         let animationSettings = settings.animation.present
         UIView.animate(withDuration: animationDuration,
-                       delay: animationSettings.delay,
-                       usingSpringWithDamping: animationSettings.damping,
-                       initialSpringVelocity: animationSettings.springVelocity,
-                       options: animationSettings.options.union(.allowUserInteraction),
-                       animations: { [weak self] in
-                        if let transformScale = self?.settings.animation.scale {
-                            presentingView.transform = CGAffineTransform(scaleX: transformScale.width, y: transformScale.height)
-                        }
-                        self?.performCustomPresentationAnimation(presentedView, presentingView: presentingView)
+            delay: animationSettings.delay,
+            usingSpringWithDamping: animationSettings.damping,
+            initialSpringVelocity: animationSettings.springVelocity,
+            options: animationSettings.options.union(.allowUserInteraction).union(.curveEaseInOut),
+            animations: { [weak self] in
+                if let transformScale = self?.settings.animation.scale {
+                    presentingView.transform = CGAffineTransform(scaleX: transformScale.width, y: transformScale.height)
+                }
+                self?.performCustomPresentationAnimation(presentedView, presentingView: presentingView)
             },
-                       completion: { [weak self] finished in
-                        self?.onDidPresentView()
-                        completion?(finished)
-        })
+            completion: { [weak self] finished in
+                self?.onDidPresentView()
+                completion?(finished)
+            })
     }
     
     open func dismissView(_ presentedView: UIView, presentingView: UIView, animationDuration: Double, completion: ((_ completed: Bool) -> Void)?) {
@@ -560,35 +562,38 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         let animationSettings = settings.animation.dismiss
         
         UIView.animate(withDuration: animationDuration,
-                       delay: animationSettings.delay,
-                       usingSpringWithDamping: animationSettings.damping,
-                       initialSpringVelocity: animationSettings.springVelocity,
-                       options: animationSettings.options.union(.allowUserInteraction),
-                       animations: { [weak self] in
-                        if let _ = self?.settings.animation.scale {
-                            presentingView.transform = CGAffineTransform.identity
-                        }
-                        self?.performCustomDismissingAnimation(presentedView, presentingView: presentingView)
+            delay: animationSettings.delay,
+            usingSpringWithDamping: animationSettings.damping,
+            initialSpringVelocity: animationSettings.springVelocity,
+            options: animationSettings.options.union(.allowUserInteraction),
+            animations: { [weak self] in
+                if let _ = self?.settings.animation.scale {
+                    presentingView.transform = CGAffineTransform.identity
+                }
+                self?.performCustomDismissingAnimation(presentedView, presentingView: presentingView)
             },
-                       completion: { [weak self] _ in
-                        self?.onDidDismissView()
-                        completion?(true)
-        })
+            completion: { [weak self] _ in
+                self?.onDidDismissView()
+                completion?(true)
+            })
     }
     
     open func onWillPresentView() {
         backgroundView.alpha = 0.0
-        cancelView?.frame.origin.y = view.bounds.size.height
+        cancelView?.frame.origin.y = UIScreen.main.bounds.height + collectionView.frame.size.height + 24
         collectionView.collectionViewLayout.invalidateLayout()
         collectionView.layoutSubviews()
+        collectionView.frame.origin.y = UIScreen.main.bounds.height
         // Override this to add custom behavior previous to start presenting view animated.
         // Tip: you could start a new animation from this method
     }
     
     open func performCustomPresentationAnimation(_ presentedView: UIView, presentingView: UIView) {
         backgroundView.alpha = 1.0
-        cancelView?.frame.origin.y = view.bounds.size.height - settings.cancelView.height - safeAreaInsets.bottom
-        collectionView.frame = view.bounds
+        cancelView?.frame.origin.y = UIScreen.main.bounds.height - (settings.cancelView.height  + 28 )
+        var height = min(UIScreen.main.bounds.height / 2, CGFloat(56) * CGFloat(self.sectionForIndex(0)!.actions.count + 1))
+
+        collectionView.frame.origin.y = UIScreen.main.bounds.height - height - 4 - settings.cancelView.height
         // Override this to add custom animations. This method is performed within the presentation animation block
     }
     
@@ -604,7 +609,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     open func performCustomDismissingAnimation(_ presentedView: UIView, presentingView: UIView) {
         backgroundView.alpha = 0.0
         cancelView?.frame.origin.y = view.bounds.size.height
-        collectionView.frame.origin.y = contentHeight + (settings.cancelView.showCancel ? settings.cancelView.height : 0) + settings.animation.dismiss.offset + safeAreaInsets.bottom
+        collectionView.frame.origin.y = UIScreen.main.bounds.height
         // Override this to add custom animations. This method is performed within the presentation animation block
     }
     
@@ -619,6 +624,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     }
     
     @objc func tapGestureDidRecognize(_ gesture: UITapGestureRecognizer) {
+        print("Hiding on tap")
         self.dismiss()
     }
     
@@ -643,7 +649,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
         
         return collectionView.cellForItem(at: unwrappedPrevPath) as? ActionViewType
     }
-    
+
     func hasHeader() -> Bool {
         return headerData != nil && headerSpec != nil
     }
@@ -651,7 +657,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     fileprivate func numberOfActions() -> Int {
         return _sections.flatMap({ $0.actions }).count
     }
-    
+        
     fileprivate func numberOfSections() -> Int {
         return hasHeader() ? _sections.count + 1 : _sections.count
     }
@@ -659,40 +665,18 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
     fileprivate func actionSectionIndexFor(_ section: Int) -> Int {
         return hasHeader() ? section - 1 : section
     }
-    
+
     fileprivate func setUpContentInsetForHeight(_ height: CGFloat) {
-        
-        initialContentInset = initialContentInset ?? collectionView.contentInset
-        var leftInset = initialContentInset.left
-        var rightInset = initialContentInset.right
-        var bottomInset = settings.cancelView.showCancel ? initialContentInset.bottom + settings.cancelView.height : initialContentInset.bottom
-        var topInset = height - contentHeight - safeAreaInsets.bottom
-        
-        if settings.cancelView.showCancel {
-            topInset -= settings.cancelView.height
-        }
-        
-        topInset = max(topInset, 30)
-        
-        bottomInset += safeAreaInsets.bottom
-        leftInset += safeAreaInsets.left
-        rightInset += safeAreaInsets.right
-        topInset += safeAreaInsets.top
-        
-        collectionView.contentInset = UIEdgeInsets(top: topInset, left: leftInset, bottom: bottomInset, right: rightInset)
-        if !settings.behavior.useDynamics {
-            collectionView.contentOffset.y = -height + contentHeight + bottomInset
-        }
     }
-    
+
     // MARK: - Private properties
-    
+
     fileprivate var navigationBarWasHiddenAtStart = false
     fileprivate var initialContentInset: UIEdgeInsets!
-    
+
     fileprivate var disableActions = false
     fileprivate var isPresenting = false
-    
+
     fileprivate var _dynamicSectionIndex: Int?
     fileprivate var _headerData: RawData<HeaderDataType>?
     fileprivate var _sections = [Section<ActionDataType, SectionHeaderDataType>]()
@@ -701,7 +685,7 @@ open class ActionController<ActionViewType: UICollectionViewCell, ActionDataType
 // MARK: - DynamicsActionController class
 
 open class DynamicsActionController<ActionViewType: UICollectionViewCell, ActionDataType, HeaderViewType: UICollectionReusableView, HeaderDataType, SectionHeaderViewType: UICollectionReusableView, SectionHeaderDataType> : ActionController<ActionViewType, ActionDataType, HeaderViewType, HeaderDataType, SectionHeaderViewType, SectionHeaderDataType> {
-    
+
     open lazy var animator: UIDynamicAnimator = {
         return UIDynamicAnimator()
     }()
@@ -721,7 +705,7 @@ open class DynamicsActionController<ActionViewType: UICollectionViewCell, Action
         super.init(coder: aDecoder)
         settings.behavior.useDynamics = true
     }
-    
+ 
     open override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -735,14 +719,14 @@ open class DynamicsActionController<ActionViewType: UICollectionViewCell, Action
         contentHeight += collectionView.contentInset.bottom
         
         setUpContentInsetForHeight(view.frame.height)
-        
+
         view.setNeedsLayout()
         view.layoutIfNeeded()
     }
-    
+
     open override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+
         for (index, section) in _sections.enumerated() {
             var rowIndex = -1
             let indexPaths = section.actions.map({ _ -> IndexPath in
@@ -774,33 +758,33 @@ open class DynamicsActionController<ActionViewType: UICollectionViewCell, Action
         }
         return CGSize.zero
     }
-    
+
     // MARK: - Overrides
-    
+
     open override func dismiss(_ completion: (() -> ())?) {
         animator.addBehavior(gravityBehavior)
-        
+
         UIView.animate(withDuration: settings.animation.dismiss.duration, animations: { [weak self] in
             self?.backgroundView.alpha = 0.0
         })
-        
+
         presentingViewController?.dismiss(animated: true, completion: completion)
     }
-    
+
     open override func dismissView(_ presentedView: UIView, presentingView: UIView, animationDuration: Double, completion: ((_ completed: Bool) -> Void)?) {
         onWillDismissView()
-        
+
         UIView.animate(withDuration: animationDuration,
-                       animations: { [weak self] in
-                        presentingView.transform = CGAffineTransform.identity
-                        self?.performCustomDismissingAnimation(presentedView, presentingView: presentingView)
+            animations: { [weak self] in
+                presentingView.transform = CGAffineTransform.identity
+                self?.performCustomDismissingAnimation(presentedView, presentingView: presentingView)
             },
-                       completion: { [weak self] finished in
-                        self?.onDidDismissView()
-                        completion?(finished)
-        })
+            completion: { [weak self] finished in
+                self?.onDidDismissView()
+                completion?(finished)
+            })
     }
-    
+
     open override func onWillPresentView() {
         backgroundView.frame = view.bounds
         backgroundView.alpha = 0.0
@@ -813,5 +797,5 @@ open class DynamicsActionController<ActionViewType: UICollectionViewCell, Action
     open override func performCustomDismissingAnimation(_ presentedView: UIView, presentingView: UIView) {
         // Nothing to do in this case
     }
-    
+
 }
